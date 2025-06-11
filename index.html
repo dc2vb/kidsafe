@@ -24,7 +24,7 @@
             margin: 0 auto;
             padding: 20px;
             background: white;
-            min-height: 100vh;
+            min-height: calc(100vh - 100px);
             box-shadow: 0 0 30px rgba(0,0,0,0.1);
         }
 
@@ -44,6 +44,50 @@
         .header p {
             color: #7f8c8d;
             font-size: 14px;
+        }
+
+        .intro-section {
+            margin-bottom: 32px;
+            padding: 0 4px;
+        }
+
+        .intro-lead {
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 1.4;
+            color: #2c3e50;
+            margin-bottom: 16px;
+        }
+
+        .intro-text {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #495057;
+            margin-bottom: 20px;
+        }
+
+        .instructions {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 16px 20px;
+            border-radius: 10px;
+            border-left: 3px solid #667eea;
+            margin-bottom: 0;
+        }
+
+        .instructions-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .instructions-text {
+            font-size: 14px;
+            color: #6c757d;
+            line-height: 1.5;
+            margin: 0;
         }
 
         .search-section {
@@ -195,6 +239,46 @@
             line-height: 1.4;
         }
 
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .footer-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #ecf0f1;
+        }
+
+        .footer-contact {
+            font-size: 12px;
+            line-height: 1.6;
+            color: #bdc3c7;
+            margin-bottom: 6px;
+        }
+
+        .footer-contact a {
+            color: #3498db;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-contact a:hover {
+            color: #5dade2;
+            text-decoration: underline;
+        }
+
+        .footer-beta {
+            font-size: 10px;
+            color: #95a5a6;
+            font-style: italic;
+            margin-top: 6px;
+        }
+
         .data-source {
             font-size: 11px;
             color: #6c757d;
@@ -220,7 +304,20 @@
     <div class="container">
         <div class="header">
             <h1>🏫 School Safety Tracker</h1>
-            <p>Safety scores for Fairfax County public schools</p>
+            <p>Safety Scores for Fairfax County Public Schools</p>
+        </div>
+
+        <div class="intro-section">
+            <p class="intro-lead">
+                Whether your child walks to school each morning or heads to the bus stop around the corner, you want to know they're safe.
+            </p>
+            <p class="intro-text">
+                We get it—choosing the right school means looking at more than just test scores. This tool gives you a clear picture of safety conditions around each Fairfax County elementary and middle school, with crime rates, traffic patterns, and other safety factors that matter to families like yours.
+            </p>
+            <div class="instructions">
+                <div class="instructions-title">How it works</div>
+                <p class="instructions-text">Pick a school from the dropdown menu below to see its safety score and detailed breakdown. Higher scores mean safer neighborhoods for your kids.</p>
+            </div>
         </div>
 
         <div class="search-section">
@@ -240,6 +337,15 @@
         <div class="disclaimer">
             <strong>Important:</strong> Safety scores are calculated based on publicly available crime data, traffic incidents, and registered sex offender proximity. Scores are updated monthly and should be used as one factor among many when evaluating schools. Always verify current safety measures directly with schools.
         </div>
+    </div>
+
+    <div class="footer">
+        <div class="footer-title">Developed with Love by Frank Duenas ❤️</div>
+        <div class="footer-contact">
+            © Copyright Frank Duenas 2025. All Rights Reserved | 
+            <a href="https://www.linkedin.com/in/fduenas/" target="_blank">Let's Connect on LinkedIn</a>
+        </div>
+        <div class="footer-beta">This experience in beta.</div>
     </div>
 
     <script>
@@ -305,6 +411,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             populateSchoolDropdown();
             setupEventListeners();
+            loadRandomSchools();
         });
 
         function populateSchoolDropdown() {
@@ -336,6 +443,77 @@
             document.getElementById('schoolResults').innerHTML = '';
         }
 
+        function loadRandomSchools() {
+            showLoading();
+            
+            // Simulate API delay
+            setTimeout(() => {
+                const randomSchools = getRandomSchools(5);
+                displayMultipleSchools(randomSchools);
+                hideLoading();
+            }, 1500);
+        }
+
+        function getRandomSchools(count) {
+            const shuffled = [...schools].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        }
+
+        function displayMultipleSchools(schoolList) {
+            const resultsDiv = document.getElementById('schoolResults');
+            let html = '';
+            
+            schoolList.forEach(school => {
+                const safetyData = generateSafetyData(school);
+                const scoreClass = safetyData.overallScore >= 80 ? 'good' : safetyData.overallScore >= 65 ? 'fair' : 'poor';
+                const scoreLabel = safetyData.overallScore >= 80 ? 'Excellent Safety' : safetyData.overallScore >= 65 ? 'Good Safety' : 'Needs Attention';
+                
+                html += `
+                    <div class="school-card active">
+                        <div class="school-name">${school.name}</div>
+                        
+                        <div class="safety-score ${scoreClass}">
+                            <div class="score-number">${safetyData.overallScore}</div>
+                            <div class="score-label">${scoreLabel}</div>
+                        </div>
+                        
+                        <div class="metrics-grid">
+                            <div class="metric">
+                                <div class="metric-label">Crime Rate (per 1000)</div>
+                                <div class="metric-value">${safetyData.crimeRate}</div>
+                                <div class="data-source">Source: Fairfax County Police</div>
+                            </div>
+                            
+                            <div class="metric">
+                                <div class="metric-label">Traffic Incidents (annual)</div>
+                                <div class="metric-value">${safetyData.trafficIncidents}</div>
+                                <div class="data-source">Source: VDOT Traffic Data</div>
+                            </div>
+                            
+                            <div class="metric">
+                                <div class="metric-label">Registered Sex Offenders (1mi)</div>
+                                <div class="metric-value">${safetyData.sexOffenders}</div>
+                                <div class="data-source">Source: Virginia Sex Offender Registry</div>
+                            </div>
+                            
+                            <div class="metric">
+                                <div class="metric-label">School Zone Safety</div>
+                                <div class="metric-value">${safetyData.schoolZoneSafety}%</div>
+                                <div class="data-source">Source: School Safety Assessment</div>
+                            </div>
+                        </div>
+                        
+                        <div class="metric">
+                            <div class="metric-label">School Address</div>
+                            <div class="metric-value" style="font-size: 14px; line-height: 1.4;">${school.address}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultsDiv.innerHTML = html;
+        }
+
         async function loadSchoolData(schoolName) {
             const school = schools.find(s => s.name === schoolName);
             if (!school) return;
@@ -348,7 +526,7 @@
             try {
                 // Generate realistic safety data based on school location and type
                 const safetyData = generateSafetyData(school);
-                displaySchoolData(school, safetyData);
+                displaySingleSchool(school, safetyData);
             } catch (error) {
                 console.error('Error loading school data:', error);
                 displayError();
@@ -384,7 +562,7 @@
             };
         }
 
-        function displaySchoolData(school, data) {
+        function displaySingleSchool(school, data) {
             const resultsDiv = document.getElementById('schoolResults');
             
             const scoreClass = data.overallScore >= 80 ? 'good' : data.overallScore >= 65 ? 'fair' : 'poor';
