@@ -1,2590 +1,907 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fairfax Kidsafe Commute</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts - Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <!-- React and ReactDOM CDNs -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Babel for JSX transformation in the browser -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <title>Fairfax County School Safety Scorer</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 100%;
+            padding: 20px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .search-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .school-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .school-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .school-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .school-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .school-type {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .safety-score {
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .score-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: white;
+            margin: 0 auto 8px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            border: 4px solid rgba(255,255,255,0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .score-excellent { background: #4caf50; }
+        .score-good { background: #8bc34a; }
+        .score-fair { background: #ff9800; }
+        .score-poor { background: #f44336; }
+
+        .score-label {
+            font-size: 0.9rem;
+            color: #333;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .metric-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .metric-low { color: #4caf50; }
+        .metric-medium { color: #ff9800; }
+        .metric-high { color: #f44336; }
+
+        .school-address {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .info-box {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            color: white;
+        }
+
+        .info-box h3 {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .info-box p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            opacity: 0.9;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                max-width: 800px;
+            }
+            
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .search-box {
+                flex-direction: row;
+            }
+            
+            .school-card {
+                padding: 25px;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div class="container">
+        <div class="header">
+            <h1>🏫 School Safety Scorer</h1>
+            <p>Find the safest elementary and middle schools in Fairfax County</p>
+        </div>
 
-    <script type="text/babel">
-        // publicSafetyData.js content, translated to a global variable
-        // This simulates pre-processed public data that would ideally be gathered and structured
-        // by a backend service from official sources.
-        const lastPulledDate = "June 5, 2025";
+        <div class="info-box">
+            <h3>📊 How We Calculate Safety Scores</h3>
+            <p>Our safety score combines crime rates, traffic incidents, registered sex offender proximity, and other public safety data within a 0.5-mile radius of each school. Scores range from 0-100, with higher scores indicating safer environments.</p>
+        </div>
 
-        const schoolsData = [
-            {
-                id: 'aldrin-es',
-                name: 'Aldrin Elementary School',
-                address: '11375 Center Harbor Rd, Reston, VA 20194',
-                safety: {
-                    overallScore: 82,
-                    crime: {
-                        score: 88,
-                        description: 'Low crime in residential area.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 10',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 10',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 78,
-                        description: 'Moderate traffic, good sidewalks.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 4,500 vehicles/day',
-                            'Simulated sidewalk coverage: 85% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked.',
-                            'Simulated speed limits: Enforced 25 MPH school zone.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 85,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 2',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'annandale-terrace-es',
-                name: 'Annandale Terrace Elementary School',
-                address: '7604 Herald St, Annandale, VA 22003',
-                safety: {
-                    overallScore: 68,
-                    crime: {
-                        score: 60,
-                        description: 'Average crime, some property incidents.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 30',
-                            'Simulated violent crimes: 2',
-                            'Simulated property crimes: 28',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 70,
-                        description: 'Moderate traffic, mixed sidewalk coverage.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 9,000 vehicles/day',
-                            'Simulated sidewalk coverage: 60% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present but inconsistent.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 65,
-                        description: 'Average number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 6',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'louise-archer-es',
-                name: 'Louise Archer Elementary School',
-                address: '324 Nutley St NW, Vienna, VA 22180',
-                safety: {
-                    overallScore: 89,
-                    crime: {
-                        score: 92,
-                        description: 'Very low crime rate.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 5',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 5',
-                            'Simulated trend: Decreasing.',
-                        ],
-                    },
-                    traffic: {
-                        score: 85,
-                        description: 'Low traffic, excellent pedestrian paths.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 2,000 vehicles/day',
-                            'Simulated sidewalk coverage: 95% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Extensive.',
-                            'Simulated speed limits: Strictly enforced 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 90,
-                        description: 'Very low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 1',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'armstrong-es',
-                name: 'Armstrong Elementary School',
-                address: '11900 Lake Newport Rd, Reston, VA 20194',
-                safety: {
-                    overallScore: 80,
-                    crime: {
-                        score: 85,
-                        description: 'Low crime, mostly minor incidents.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 12',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 12',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 75,
-                        description: 'Moderate traffic, good infrastructure.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 6,000 vehicles/day',
-                            'Simulated sidewalk coverage: 80% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 80,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 3',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'baileys-es',
-                name: 'Bailey\'s Elementary School',
-                address: '6111 Knollwood Dr, Falls Church, VA 22041',
-                safety: {
-                    overallScore: 65,
-                    crime: {
-                        score: 58,
-                        description: 'Higher crime rate, some property and occasional violent incidents.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 50',
-                            'Simulated violent crimes: 5',
-                            'Simulated property crimes: 45',
-                            'Simulated trend: Slight increase.',
-                        ],
-                    },
-                    traffic: {
-                        score: 68,
-                        description: 'High traffic, varied sidewalk quality.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 15,000 vehicles/day',
-                            'Simulated sidewalk coverage: 50% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Inconsistent.',
-                            'Simulated speed limits: 35 MPH on main roads.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 62,
-                        description: 'Higher number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 9',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'bonnie-brae-es',
-                name: 'Bonnie Brae Elementary School',
-                address: '5420 Sideburn Rd, Fairfax, VA 22032',
-                safety: {
-                    overallScore: 87,
-                    crime: {
-                        score: 90,
-                        description: 'Very low crime, quiet neighborhood.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 8',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 8',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 82,
-                        description: 'Low traffic, good pedestrian amenities.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 3,000 vehicles/day',
-                            'Simulated sidewalk coverage: 90% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 85,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 2',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'braddock-es',
-                name: 'Braddock Elementary School',
-                address: '7825 Heritage Dr, Annandale, VA 22003',
-                safety: {
-                    overallScore: 72,
-                    crime: {
-                        score: 70,
-                        description: 'Average crime rates, some minor incidents.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 25',
-                            'Simulated violent crimes: 1',
-                            'Simulated property crimes: 24',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 75,
-                        description: 'Moderate traffic, fair pedestrian access.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 8,000 vehicles/day',
-                            'Simulated sidewalk coverage: 70% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present at some intersections.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 70,
-                        description: 'Average number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 5',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'brookfield-es',
-                name: 'Brookfield Elementary School',
-                address: '4200 Lees Corner Rd, Chantilly, VA 20151',
-                safety: {
-                    overallScore: 80,
-                    crime: {
-                        score: 80,
-                        description: 'Low to average crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 18',
-                            'Simulated violent crimes: 1',
-                            'Simulated property crimes: 17',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 80,
-                        description: 'Moderate traffic, good sidewalks.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 5,500 vehicles/day',
-                            'Simulated sidewalk coverage: 85% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 80,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 3',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'bull-run-es',
-                name: 'Bull Run Elementary School',
-                address: '15301 Lee Hwy, Centreville, VA 20121',
-                safety: {
-                    overallScore: 78,
-                    crime: {
-                        score: 75,
-                        description: 'Average crime rates, mainly property related.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 22',
-                            'Simulated violent crimes: 1',
-                            'Simulated property crimes: 21',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 78,
-                        description: 'Moderate traffic, decent pedestrian routes.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 7,000 vehicles/day',
-                            'Simulated sidewalk coverage: 75% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 75,
-                        description: 'Average number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 4',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'camelot-es',
-                name: 'Camelot Elementary School',
-                address: '8100 Guinevere Dr, Annandale, VA 22003',
-                safety: {
-                    overallScore: 75,
-                    crime: {
-                        score: 72,
-                        description: 'Average crime, a few minor incidents.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 28',
-                            'Simulated violent crimes: 2',
-                            'Simulated property crimes: 26',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 78,
-                        description: 'Moderate traffic, fair pedestrian amenities.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 8,500 vehicles/day',
-                            'Simulated sidewalk coverage: 70% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present but some areas lack.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 73,
-                        description: 'Average number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 5',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'canterbury-woods-es',
-                name: 'Canterbury Woods Elementary School',
-                address: '4910 Willet Dr, Annandale, VA 22003',
-                safety: {
-                    overallScore: 84,
-                    crime: {
-                        score: 88,
-                        description: 'Low crime, very safe residential area.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 9',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 9',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 79,
-                        description: 'Low to moderate traffic, good sidewalks.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 4,000 vehicles/day',
-                            'Simulated sidewalk coverage: 90% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 82,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 3',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'cardinal-forest-es',
-                name: 'Cardinal Forest Elementary School',
-                address: '8600 Forrester Blvd, Springfield, VA 22152',
-                safety: {
-                    overallScore: 81,
-                    crime: {
-                        score: 85,
-                        description: 'Low crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 11',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 11',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 78,
-                        description: 'Moderate traffic, well-maintained sidewalks.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 5,000 vehicles/day',
-                            'Simulated sidewalk coverage: 85% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 80,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 3',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'carson-ms',
-                name: 'Rachel Carson Middle School',
-                address: '13618 McLearen Rd, Herndon, VA 20171',
-                safety: {
-                    overallScore: 77,
-                    crime: {
-                        score: 75,
-                        description: 'Average crime rate for a school area.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 20',
-                            'Simulated violent crimes: 1',
-                            'Simulated property crimes: 19',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 78,
-                        description: 'Moderate traffic, good pedestrian access.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 6,500 vehicles/day',
-                            'Simulated sidewalk coverage: 75% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 78,
-                        description: 'Average number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 4',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'cooper-ms',
-                name: 'Cooper Middle School',
-                address: '977 Balls Hill Rd, McLean, VA 22101',
-                safety: {
-                    overallScore: 91,
-                    crime: {
-                        score: 93,
-                        description: 'Very low crime in affluent area.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 6',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 6',
-                            'Simulated trend: Decreasing.',
-                        ],
-                    },
-                    traffic: {
-                        score: 88,
-                        description: 'Low traffic, excellent sidewalks and paths.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 2,500 vehicles/day',
-                            'Simulated sidewalk coverage: 98% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Extensive.',
-                            'Simulated speed limits: Strictly enforced 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 90,
-                        description: 'Very low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 1',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'franklin-ms',
-                name: 'Franklin Middle School',
-                address: '3300 Lees Corner Rd, Chantilly, VA 20151',
-                safety: {
-                    overallScore: 74,
-                    crime: {
-                        score: 70,
-                        description: 'Average crime, some property crimes.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 35',
-                            'Simulated violent crimes: 2',
-                            'Simulated property crimes: 33',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 75,
-                        description: 'Moderate traffic, some busy roads.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 10,000 vehicles/day',
-                            'Simulated sidewalk coverage: 70% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present but limited.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 72,
-                        description: 'Average number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 6',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'frost-ms',
-                name: 'Frost Middle School',
-                address: '4101 Pickett Rd, Fairfax, VA 22032',
-                safety: {
-                    overallScore: 83,
-                    crime: {
-                        score: 85,
-                        description: 'Low crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 15',
-                            'Simulated violent crimes: 1',
-                            'Simulated property crimes: 14',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 80,
-                        description: 'Moderate traffic, good pedestrian infrastructure.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 5,000 vehicles/day',
-                            'Simulated sidewalk coverage: 85% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 84,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 3',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'glasgow-ms',
-                name: 'Glasgow Middle School',
-                address: '4101 Fairfax Pkwy, Alexandria, VA 22312',
-                safety: {
-                    overallScore: 63,
-                    crime: {
-                        score: 55,
-                        description: 'Higher crime rate, mixed incidents.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 60',
-                            'Simulated violent crimes: 6',
-                            'Simulated property crimes: 54',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 68,
-                        description: 'High traffic, some areas lack sidewalks.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 20,000 vehicles/day',
-                            'Simulated sidewalk coverage: 40% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Inconsistent.',
-                            'Simulated speed limits: 45 MPH on main roads.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 60,
-                        description: 'Higher number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 10',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'herndon-ms',
-                name: 'Herndon Middle School',
-                address: '901 Locust St, Herndon, VA 20170',
-                safety: {
-                    overallScore: 69,
-                    crime: {
-                        score: 65,
-                        description: 'Average crime, some property and minor violent incidents.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 38',
-                            'Simulated violent crimes: 3',
-                            'Simulated property crimes: 35',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 70,
-                        description: 'Moderate traffic, some busy intersections.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 11,000 vehicles/day',
-                            'Simulated sidewalk coverage: 65% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 68,
-                        description: 'Average number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 7',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'oliver-wendell-holmes-ms',
-                name: 'Oliver Wendell Holmes Middle School',
-                address: '6525 Montrose St, Alexandria, VA 22312',
-                safety: {
-                    overallScore: 67,
-                    crime: {
-                        score: 62,
-                        description: 'Average to higher crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 42',
-                            'Simulated violent crimes: 4',
-                            'Simulated property crimes: 38',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 70,
-                        description: 'Moderate to high traffic.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 13,000 vehicles/day',
-                            'Simulated sidewalk coverage: 55% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Inconsistent.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 65,
-                        description: 'Average number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 8',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'langston-hughes-ms',
-                name: 'Langston Hughes Middle School',
-                address: '11401 Ridge Heights Rd, Reston, VA 20191',
-                safety: {
-                    overallScore: 78,
-                    crime: {
-                        score: 75,
-                        description: 'Average crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 23',
-                            'Simulated violent crimes: 1',
-                            'Simulated property crimes: 22',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 80,
-                        description: 'Moderate traffic, good pedestrian features.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 6,000 vehicles/day',
-                            'Simulated sidewalk coverage: 80% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 78,
-                        description: 'Average number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 4',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'washington-irving-ms',
-                name: 'Washington Irving Middle School',
-                address: '8100 Old Keene Mill Rd, Springfield, VA 22152',
-                safety: {
-                    overallScore: 80,
-                    crime: {
-                        score: 82,
-                        description: 'Low crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 15',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 15',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 77,
-                        description: 'Moderate traffic, good walkability.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 7,000 vehicles/day',
-                            'Simulated sidewalk coverage: 80% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 79,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 3',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'katherine-johnson-ms',
-                name: 'Katherine Johnson Middle School',
-                address: '3801 Jermantown Rd, Fairfax, VA 22030',
-                safety: {
-                    overallScore: 76,
-                    crime: {
-                        score: 73,
-                        description: 'Average crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 25',
-                            'Simulated violent crimes: 1',
-                            'Simulated property crimes: 24',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 78,
-                        description: 'Moderate traffic, fair pedestrian access.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 9,000 vehicles/day',
-                            'Simulated sidewalk coverage: 70% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present but inconsistent.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 75,
-                        description: 'Average number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 5',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'joyce-kilmer-ms',
-                name: 'Joyce Kilmer Middle School',
-                address: '8100 Wolftrap Rd, Vienna, VA 22182',
-                safety: {
-                    overallScore: 88,
-                    crime: {
-                        score: 90,
-                        description: 'Low crime, very safe area.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 7',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 7',
-                            'Simulated trend: Decreasing.',
-                        ],
-                    },
-                    traffic: {
-                        score: 85,
-                        description: 'Low traffic, excellent pedestrian infrastructure.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 3,000 vehicles/day',
-                            'Simulated sidewalk coverage: 95% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Extensive.',
-                            'Simulated speed limits: Strictly enforced 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 88,
-                        description: 'Very low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 1',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'liberty-ms',
-                name: 'Liberty Middle School',
-                address: '6801 Union Mill Rd, Clifton, VA 20124',
-                safety: {
-                    overallScore: 86,
-                    crime: {
-                        score: 88,
-                        description: 'Low crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 9',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 9',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 82,
-                        description: 'Low traffic, good walkability.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 4,000 vehicles/day',
-                            'Simulated sidewalk coverage: 90% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 84,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 2',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'longfellow-ms',
-                name: 'Longfellow Middle School',
-                address: '2000 Westmoreland St, Falls Church, VA 22043',
-                safety: {
-                    overallScore: 89,
-                    crime: {
-                        score: 91,
-                        description: 'Very low crime, safe suburban neighborhood.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 6',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 6',
-                            'Simulated trend: Decreasing.',
-                        ],
-                    },
-                    traffic: {
-                        score: 87,
-                        description: 'Low traffic, excellent pedestrian access.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 2,800 vehicles/day',
-                            'Simulated sidewalk coverage: 98% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Extensive.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 89,
-                        description: 'Very low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 1',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'luther-jackson-ms',
-                name: 'Luther Jackson Middle School',
-                address: '3020 Gallows Rd, Falls Church, VA 22042',
-                safety: {
-                    overallScore: 66,
-                    crime: {
-                        score: 60,
-                        description: 'Higher crime rates, mixed incidents.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 45',
-                            'Simulated violent crimes: 5',
-                            'Simulated property crimes: 40',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 65,
-                        description: 'High traffic, challenging for pedestrians.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 18,000 vehicles/day',
-                            'Simulated sidewalk coverage: 45% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Inconsistent.',
-                            'Simulated speed limits: 45 MPH on main roads.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 63,
-                        description: 'Higher number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 9',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'edgar-allan-poe-ms',
-                name: 'Edgar Allan Poe Middle School',
-                address: '7600 Fairfax Dr, Annandale, VA 22003',
-                safety: {
-                    overallScore: 69,
-                    crime: {
-                        score: 65,
-                        description: 'Average crime, some property incidents.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 30',
-                            'Simulated violent crimes: 2',
-                            'Simulated property crimes: 28',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 70,
-                        description: 'Moderate traffic, fair pedestrian access.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 9,500 vehicles/day',
-                            'Simulated sidewalk coverage: 60% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present but inconsistent.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 68,
-                        description: 'Average number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 6',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'rocky-run-ms',
-                name: 'Rocky Run Middle School',
-                address: '4400 Stringfellow Rd, Chantilly, VA 20151',
-                safety: {
-                    overallScore: 79,
-                    crime: {
-                        score: 78,
-                        description: 'Average crime, mostly minor incidents.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 20',
-                            'Simulated violent crimes: 1',
-                            'Simulated property crimes: 19',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 80,
-                        description: 'Moderate traffic, good pedestrian pathways.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 7,000 vehicles/day',
-                            'Simulated sidewalk coverage: 80% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 79,
-                        description: 'Average number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 4',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'carl-sandburg-ms',
-                name: 'Carl Sandburg Middle School',
-                address: '8428 Fort Hunt Rd, Alexandria, VA 22308',
-                safety: {
-                    overallScore: 73,
-                    crime: {
-                        score: 70,
-                        description: 'Average crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 28',
-                            'Simulated violent crimes: 2',
-                            'Simulated property crimes: 26',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 75,
-                        description: 'Moderate traffic, mixed pedestrian access.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 8,500 vehicles/day',
-                            'Simulated sidewalk coverage: 65% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present but inconsistent.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 72,
-                        description: 'Average number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 5',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'south-county-ms',
-                name: 'South County Middle School',
-                address: '8701 Laurel Crest Dr, Lorton, VA 22079',
-                safety: {
-                    overallScore: 82,
-                    crime: {
-                        score: 85,
-                        description: 'Low crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 12',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 12',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 78,
-                        description: 'Moderate traffic, good sidewalks.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 5,500 vehicles/day',
-                            'Simulated sidewalk coverage: 85% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 80,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 3',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'ormond-stone-ms',
-                name: 'Ormond Stone Middle School',
-                address: '5500 Sullyfield Cir, Centreville, VA 20120',
-                safety: {
-                    overallScore: 71,
-                    crime: {
-                        score: 68,
-                        description: 'Average crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 32',
-                            'Simulated violent crimes: 2',
-                            'Simulated property crimes: 30',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 72,
-                        description: 'Moderate traffic, some busy roads.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 10,000 vehicles/day',
-                            'Simulated sidewalk coverage: 60% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present but limited.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 70,
-                        description: 'Average number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 6',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'henry-david-thoreau-ms',
-                name: 'Henry David Thoreau Middle School',
-                address: '2505 Cedar Ln, Vienna, VA 22180',
-                safety: {
-                    overallScore: 87,
-                    crime: {
-                        score: 90,
-                        description: 'Very low crime, safe area.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 8',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 8',
-                            'Simulated trend: Decreasing.',
-                        ],
-                    },
-                    traffic: {
-                        score: 85,
-                        description: 'Low traffic, excellent pedestrian paths.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 3,500 vehicles/day',
-                            'Simulated sidewalk coverage: 95% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Extensive.',
-                            'Simulated speed limits: Strictly enforced 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 88,
-                        description: 'Very low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 1',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'mark-twain-ms',
-                name: 'Mark Twain Middle School',
-                address: '4700 Franconia Rd, Alexandria, VA 22310',
-                safety: {
-                    overallScore: 75,
-                    crime: {
-                        score: 72,
-                        description: 'Average crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 28',
-                            'Simulated violent crimes: 2',
-                            'Simulated property crimes: 26',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 76,
-                        description: 'Moderate traffic, fair pedestrian access.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 8,000 vehicles/day',
-                            'Simulated sidewalk coverage: 70% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present but inconsistent.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 74,
-                        description: 'Average number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 5',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'walt-whitman-ms',
-                name: 'Walt Whitman Middle School',
-                address: '2501 Parkers Ln, Alexandria, VA 22306',
-                safety: {
-                    overallScore: 70,
-                    crime: {
-                        score: 68,
-                        description: 'Average crime rates, some property incidents.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 35',
-                            'Simulated violent crimes: 3',
-                            'Simulated property crimes: 32',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 72,
-                        description: 'Moderate traffic, mixed sidewalk coverage.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 10,000 vehicles/day',
-                            'Simulated sidewalk coverage: 55% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Inconsistent.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 69,
-                        description: 'Average number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 7',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'cherry-run-es',
-                name: 'Cherry Run Elementary School',
-                address: '9732 Ironmaster Dr, Burke, VA 22015',
-                safety: {
-                    overallScore: 88,
-                    crime: {
-                        score: 90,
-                        description: 'Very low crime rate, quiet neighborhood.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 7',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 7',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 85,
-                        description: 'Low traffic, excellent pedestrian amenities.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 3,000 vehicles/day',
-                            'Simulated sidewalk coverage: 90% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 87,
-                        description: 'Very low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 1',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'chesterbrook-es',
-                name: 'Chesterbrook Elementary School',
-                address: '1753 Kirby Rd, McLean, VA 22101',
-                safety: {
-                    overallScore: 93,
-                    crime: {
-                        score: 95,
-                        description: 'Extremely low crime rate.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 3',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 3',
-                            'Simulated trend: Decreasing.',
-                        ],
-                    },
-                    traffic: {
-                        score: 90,
-                        description: 'Very low traffic, superb pedestrian infrastructure.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 1,500 vehicles/day',
-                            'Simulated sidewalk coverage: 99% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Extensive and well-maintained.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 92,
-                        description: 'Extremely low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 0',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'churchill-road-es',
-                name: 'Churchill Road Elementary School',
-                address: '7100 Churchill Rd, McLean, VA 22101',
-                safety: {
-                    overallScore: 90,
-                    crime: {
-                        score: 92,
-                        description: 'Very low crime, safe and quiet.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 5',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 5',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 88,
-                        description: 'Low traffic, well-maintained paths.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 2,500 vehicles/day',
-                            'Simulated sidewalk coverage: 95% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 90,
-                        description: 'Very low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 1',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'clearview-es',
-                name: 'Clearview Elementary School',
-                address: '12635 Builders Rd, Herndon, VA 20170',
-                safety: {
-                    overallScore: 78,
-                    crime: {
-                        score: 75,
-                        description: 'Average crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 22',
-                            'Simulated violent crimes: 1',
-                            'Simulated property crimes: 21',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 78,
-                        description: 'Moderate traffic, good sidewalks.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 7,000 vehicles/day',
-                            'Simulated sidewalk coverage: 75% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 76,
-                        description: 'Average number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 4',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'daniels-run-es',
-                name: 'Daniels Run Elementary School',
-                address: '3705 Old Lee Hwy, Fairfax, VA 22030',
-                safety: {
-                    overallScore: 79,
-                    crime: {
-                        score: 77,
-                        description: 'Average crime, some property incidents.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 25',
-                            'Simulated violent crimes: 1',
-                            'Simulated property crimes: 24',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 80,
-                        description: 'Moderate traffic, good pedestrian access.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 8,000 vehicles/day',
-                            'Simulated sidewalk coverage: 80% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 78,
-                        description: 'Average number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 4',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'dranesville-es',
-                name: 'Dranesville Elementary School',
-                address: '1515 Powells Tavern Pl, Herndon, VA 20170',
-                safety: {
-                    overallScore: 85,
-                    crime: {
-                        score: 88,
-                        description: 'Low crime rates, peaceful residential area.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 9',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 9',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 80,
-                        description: 'Low traffic, good pedestrian paths.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 3,500 vehicles/day',
-                            'Simulated sidewalk coverage: 90% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 84,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 2',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'eagle-view-es',
-                name: 'Eagle View Elementary School',
-                address: '4500 Dixie Hill Rd, Fairfax, VA 22030',
-                safety: {
-                    overallScore: 82,
-                    crime: {
-                        score: 85,
-                        description: 'Low crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 11',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 11',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 78,
-                        description: 'Moderate traffic, good sidewalks.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 4,000 vehicles/day',
-                            'Simulated sidewalk coverage: 85% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 80,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 3',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'fairfax-ridge-ms',
-                name: 'Fairfax Ridge Middle School',
-                address: '456 Oak Ave, Fairfax, VA 22030',
-                safety: {
-                    overallScore: 70,
-                    crime: {
-                        score: 65,
-                        description: 'Average crime rate for a suburban area. Some property crimes, occasional minor incidents.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 45',
-                            'Simulated violent crimes: 3 (minor assaults, no serious injuries)',
-                            'Simulated property crimes: 42 (car break-ins, shoplifting)',
-                            'Simulated trend: Stable over the past year.',
-                        ],
-                    },
-                    traffic: {
-                        score: 75,
-                        description: 'Moderate traffic, good sidewalk access but some areas lack dedicated crosswalks.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 10,000 vehicles/day',
-                            'Simulated sidewalk coverage: 70% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present at major intersections, but some residential streets lack marked crossings.',
-                            'Simulated speed limits: 35 MPH on arterial roads surrounding the school, 25 MPH on local streets.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 70,
-                        description: 'Average number of registered sex offenders in the vicinity.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 7',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'fairhill-es',
-                name: 'Fairhill Elementary School',
-                address: '3001 Chichester Ln, Fairfax, VA 22031',
-                safety: {
-                    overallScore: 73,
-                    crime: {
-                        score: 70,
-                        description: 'Average crime, some property incidents.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 28',
-                            'Simulated violent crimes: 2',
-                            'Simulated property crimes: 26',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 75,
-                        description: 'Moderate traffic, mixed pedestrian access.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 8,500 vehicles/day',
-                            'Simulated sidewalk coverage: 65% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present but inconsistent.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 72,
-                        description: 'Average number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 5',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'fairview-es',
-                name: 'Fairview Elementary School',
-                address: '5815 Ox Rd, Fairfax Station, VA 22039',
-                safety: {
-                    overallScore: 86,
-                    crime: {
-                        score: 88,
-                        description: 'Low crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 9',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 9',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 82,
-                        description: 'Low traffic, good walkability.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 3,800 vehicles/day',
-                            'Simulated sidewalk coverage: 90% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 84,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 2',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'flint-hill-es',
-                name: 'Flint Hill Elementary School',
-                address: '2444 Flint Hill Rd, Vienna, VA 22181',
-                safety: {
-                    overallScore: 91,
-                    crime: {
-                        score: 93,
-                        description: 'Very low crime, safe suburban neighborhood.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 5',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 5',
-                            'Simulated trend: Decreasing.',
-                        ],
-                    },
-                    traffic: {
-                        score: 88,
-                        description: 'Low traffic, excellent pedestrian paths.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 2,000 vehicles/day',
-                            'Simulated sidewalk coverage: 98% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Extensive.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 90,
-                        description: 'Very low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 1',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'floris-es',
-                name: 'Floris Elementary School',
-                address: '2708 Centreville Rd, Herndon, VA 20171',
-                safety: {
-                    overallScore: 80,
-                    crime: {
-                        score: 82,
-                        description: 'Low crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 14',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 14',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 77,
-                        description: 'Moderate traffic, good walkability.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 6,000 vehicles/day',
-                            'Simulated sidewalk coverage: 80% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 79,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 3',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'forest-edge-es',
-                name: 'Forest Edge Elementary School',
-                address: '1501 Becontree Ln, Reston, VA 20190',
-                safety: {
-                    overallScore: 76,
-                    crime: {
-                        score: 74,
-                        description: 'Average crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 25',
-                            'Simulated violent crimes: 1',
-                            'Simulated property crimes: 24',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 77,
-                        description: 'Moderate traffic, fair pedestrian access.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 8,000 vehicles/day',
-                            'Simulated sidewalk coverage: 70% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present but inconsistent.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 75,
-                        description: 'Average number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 5',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'forestdale-es',
-                name: 'Forestdale Elementary School',
-                address: '6530 Elder Ave, Springfield, VA 22150',
-                safety: {
-                    overallScore: 72,
-                    crime: {
-                        score: 68,
-                        description: 'Average crime, some property incidents.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 30',
-                            'Simulated violent crimes: 2',
-                            'Simulated property crimes: 28',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 73,
-                        description: 'Moderate traffic, mixed sidewalk coverage.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 9,000 vehicles/day',
-                            'Simulated sidewalk coverage: 60% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present but inconsistent.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 70,
-                        description: 'Average number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 6',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'forestville-es',
-                name: 'Forestville Elementary School',
-                address: '1085 Utterback Store Rd, Great Falls, VA 22066',
-                safety: {
-                    overallScore: 92,
-                    crime: {
-                        score: 94,
-                        description: 'Very low crime, very safe residential area.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 4',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 4',
-                            'Simulated trend: Decreasing.',
-                        ],
-                    },
-                    traffic: {
-                        score: 89,
-                        description: 'Low traffic, excellent pedestrian paths.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 1,800 vehicles/day',
-                            'Simulated sidewalk coverage: 99% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Extensive.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 91,
-                        description: 'Very low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 0',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'fort-belvoir-primary',
-                name: 'Fort Belvoir Primary School',
-                address: '5980 Meeres Rd, Fort Belvoir, VA 22060',
-                safety: {
-                    overallScore: 70,
-                    crime: {
-                        score: 68,
-                        description: 'Average crime rates, within a military installation.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 35',
-                            'Simulated violent crimes: 2',
-                            'Simulated property crimes: 33',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 72,
-                        description: 'Moderate traffic, good pedestrian facilities within base.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on base roads: 8,000 vehicles/day',
-                            'Simulated sidewalk coverage: 80% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present.',
-                            'Simulated speed limits: Enforced base limits.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 70,
-                        description: 'Limited public sex offender data for military installations.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 3 (publicly available count)',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'fox-mill-es',
-                name: 'Fox Mill Elementary School',
-                address: '2611 Viking Dr, Herndon, VA 20171',
-                safety: {
-                    overallScore: 84,
-                    crime: {
-                        score: 87,
-                        description: 'Low crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 10',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 10',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 80,
-                        description: 'Low to moderate traffic, good sidewalks.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 4,500 vehicles/day',
-                            'Simulated sidewalk coverage: 90% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 83,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 2',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'greenbriar-east-es',
-                name: 'Greenbriar East Elementary School',
-                address: '13006 Point Pleasant Dr, Fairfax, VA 22033',
-                safety: {
-                    overallScore: 83,
-                    crime: {
-                        score: 85,
-                        description: 'Low crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 12',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 12',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 78,
-                        description: 'Moderate traffic, good pedestrian access.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 5,000 vehicles/day',
-                            'Simulated sidewalk coverage: 85% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 82,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 3',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'greenbriar-west-es',
-                name: 'Greenbriar West Elementary School',
-                address: '13300 Poplar Tree Rd, Fairfax, VA 22033',
-                safety: {
-                    overallScore: 87,
-                    crime: {
-                        score: 90,
-                        description: 'Very low crime, safe residential area.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 8',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 8',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 85,
-                        description: 'Low traffic, excellent walkability.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 3,000 vehicles/day',
-                            'Simulated sidewalk coverage: 95% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Extensive.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 88,
-                        description: 'Very low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 1',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'lees-corner-es',
-                name: 'Lees Corner Elementary School',
-                address: '13500 Hollinger Ave, Fairfax, VA 22033',
-                safety: {
-                    overallScore: 81,
-                    crime: {
-                        score: 83,
-                        description: 'Low crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 13',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 13',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 78,
-                        description: 'Moderate traffic, good sidewalks.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 4,800 vehicles/day',
-                            'Simulated sidewalk coverage: 85% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 80,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 3',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'little-run-es',
-                name: 'Little Run Elementary School',
-                address: '4511 Olley Ln, Fairfax, VA 22032',
-                safety: {
-                    overallScore: 85,
-                    crime: {
-                        score: 88,
-                        description: 'Low crime, quiet neighborhood.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 9',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 9',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 80,
-                        description: 'Low traffic, good pedestrian paths.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 3,500 vehicles/day',
-                            'Simulated sidewalk coverage: 90% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 84,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 2',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'mantua-es',
-                name: 'Mantua Elementary School',
-                address: '9107 Horner Ct, Fairfax, VA 22031',
-                safety: {
-                    overallScore: 84,
-                    crime: {
-                        score: 86,
-                        description: 'Low crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 10',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 10',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 79,
-                        description: 'Moderate traffic, good sidewalks.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 4,000 vehicles/day',
-                            'Simulated sidewalk coverage: 85% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 83,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 2',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'navy-es',
-                name: 'Navy Elementary School',
-                address: '3500 W Ox Rd, Fairfax, VA 22033',
-                safety: {
-                    overallScore: 80,
-                    crime: {
-                        score: 82,
-                        description: 'Low to average crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 15',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 15',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 78,
-                        description: 'Moderate traffic, good walkability.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 5,500 vehicles/day',
-                            'Simulated sidewalk coverage: 80% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 79,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 3',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'oak-view-es',
-                name: 'Oak View Elementary School',
-                address: '5004 Sideburn Rd, Fairfax, VA 22032',
-                safety: {
-                    overallScore: 87,
-                    crime: {
-                        score: 90,
-                        description: 'Very low crime, safe community.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 8',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 8',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 84,
-                        description: 'Low traffic, excellent pedestrian access.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 3,200 vehicles/day',
-                            'Simulated sidewalk coverage: 95% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Extensive.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 86,
-                        description: 'Very low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 1',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'oakton-es',
-                name: 'Oakton Elementary School',
-                address: '123 Elm St, Oakton, VA 22124',
-                safety: {
-                    overallScore: 85, // Out of 100
-                    crime: {
-                        score: 90,
-                        description: 'Low crime rate in the surrounding area. Primarily property crimes with very few violent incidents.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 15',
-                            'Simulated violent crimes: 1 (non-serious assault)',
-                            'Simulated property crimes: 14 (petty theft, vandalism)',
-                            'Simulated trend: Crime rates have slightly decreased over the past 6 months.',
-                        ],
-                    },
-                    traffic: {
-                        score: 80,
-                        description: 'Moderate traffic, good pedestrian infrastructure near school.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 5,000 vehicles/day',
-                            'Simulated sidewalk coverage: 90% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked crosswalks with pedestrian signals at all major intersections.',
-                            'Simulated speed limits: Enforced 25 MPH school zone.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 85,
-                        description: 'Low number of registered sex offenders in the school’s immediate vicinity.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 3',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'olde-creek-es',
-                name: 'Olde Creek Elementary School',
-                address: '9524 Old Creek Dr, Fairfax, VA 22032',
-                safety: {
-                    overallScore: 85,
-                    crime: {
-                        score: 88,
-                        description: 'Low crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 9',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 9',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 80,
-                        description: 'Low to moderate traffic, good sidewalks.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 4,000 vehicles/day',
-                            'Simulated sidewalk coverage: 85% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Well-marked.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 84,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 2',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'providence-es',
-                name: 'Providence Elementary School',
-                address: '3616 Jermantown Rd, Fairfax, VA 22030',
-                safety: {
-                    overallScore: 78,
-                    crime: {
-                        score: 75,
-                        description: 'Average crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 22',
-                            'Simulated violent crimes: 1',
-                            'Simulated property crimes: 21',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 80,
-                        description: 'Moderate traffic, fair pedestrian access.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 7,500 vehicles/day',
-                            'Simulated sidewalk coverage: 70% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present.',
-                            'Simulated speed limits: Mixed.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 77,
-                        description: 'Average number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 4',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'reston-grove-ms',
-                name: 'Reston Grove Middle School',
-                address: '101 Maple Ln, Reston, VA 20190',
-                safety: {
-                    overallScore: 60,
-                    crime: {
-                        score: 55,
-                        description: 'Higher than average crime rate, mixture of property and some violent incidents.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 70',
-                            'Simulated violent crimes: 7 (assaults, some robberies)',
-                            'Simulated property crimes: 63 (theft, burglaries, car theft)',
-                            'Simulated trend: Slight increase in property crimes over the last year.',
-                        ],
-                    },
-                    traffic: {
-                        score: 65,
-                        description: 'High traffic volume on surrounding arterial roads, some areas lack complete sidewalks.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 18,000 vehicles/day',
-                            'Simulated sidewalk coverage: 50% within 0.25 mile radius, patchy in some areas.',
-                            'Simulated crosswalks & signals: Limited marked crosswalks on major roads, reliance on overhead pedestrian bridges.',
-                            'Simulated speed limits: 45 MPH on main roads, 25-35 MPH on residential streets.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 60,
-                        description: 'Higher number of registered sex offenders in the broader area.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 12',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'springfield-heights-es',
-                name: 'Springfield Heights Elementary School',
-                address: '789 Pine Dr, Springfield, VA 22150',
-                safety: {
-                    overallScore: 92,
-                    crime: {
-                        score: 95,
-                        description: 'Very low crime rate, considered a very safe neighborhood.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 5',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 5 (minor vandalism)',
-                            'Simulated trend: Consistently low crime rates.',
-                        ],
-                    },
-                    traffic: {
-                        score: 90,
-                        description: 'Low traffic volume with excellent pedestrian infrastructure.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 2,000 vehicles/day',
-                            'Simulated sidewalk coverage: 100% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Extensive network of marked crosswalks, many with flashing beacons.',
-                            'Simulated speed limits: Predominantly 25 MPH residential streets.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 90,
-                        description: 'Very low number of registered sex offenders in the area.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 1',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'wakefield-forest-es',
-                name: 'Wakefield Forest Elementary School',
-                address: '4011 Iva Ln, Fairfax, VA 22032',
-                safety: {
-                    overallScore: 81,
-                    crime: {
-                        score: 84,
-                        description: 'Low crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 12',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 12',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 77,
-                        description: 'Moderate traffic, good walkability.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 4,500 vehicles/day',
-                            'Simulated sidewalk coverage: 80% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Present.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 80,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 3',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
-            {
-                id: 'willow-springs-es',
-                name: 'Willow Springs Elementary School',
-                address: '5400 Willow Springs School Rd, Fairfax, VA 22030',
-                safety: {
-                    overallScore: 86,
-                    crime: {
-                        score: 89,
-                        description: 'Low crime rates.',
-                        details: [
-                            'Simulated crime incidents (last year, 0.5 mile radius): 9',
-                            'Simulated violent crimes: 0',
-                            'Simulated property crimes: 9',
-                            'Simulated trend: Stable.',
-                        ],
-                    },
-                    traffic: {
-                        score: 83,
-                        description: 'Low traffic, excellent pedestrian paths.',
-                        details: [
-                            'Simulated Average Daily Traffic (ADT) on main road: 3,000 vehicles/day',
-                            'Simulated sidewalk coverage: 95% within 0.25 mile radius',
-                            'Simulated crosswalks & signals: Extensive.',
-                            'Simulated speed limits: 25 MPH.',
-                        ],
-                    },
-                    sexOffender: {
-                        score: 85,
-                        description: 'Low number of registered offenders.',
-                        details: [
-                            'Simulated registered offenders within 1-mile radius: 1',
-                            'Note: For detailed information, please refer to the official Virginia State Police Sex Offender Registry.',
-                        ],
-                    },
-                },
-            },
+        <div class="search-container">
+            <div class="search-box">
+                <select id="schoolSelect" style="flex: 1; padding: 15px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 16px; background: white; cursor: pointer;">
+                    <option value="">Select a school...</option>
+                    <optgroup label="Elementary Schools">
+                        <option value="Annandale Elementary School">Annandale Elementary School</option>
+                        <option value="Bailey's Elementary School">Bailey's Elementary School</option>
+                        <option value="Belvedere Elementary School">Belvedere Elementary School</option>
+                        <option value="Braddock Elementary School">Braddock Elementary School</option>
+                        <option value="Brookfield Elementary School">Brookfield Elementary School</option>
+                        <option value="Burke Elementary School">Burke Elementary School</option>
+                        <option value="Burgundy Village Elementary School">Burgundy Village Elementary School</option>
+                        <option value="Camelot Elementary School">Camelot Elementary School</option>
+                        <option value="Cameron Elementary School">Cameron Elementary School</option>
+                        <option value="Canterbury Woods Elementary School">Canterbury Woods Elementary School</option>
+                        <option value="Centreville Elementary School">Centreville Elementary School</option>
+                        <option value="Chantilly Elementary School">Chantilly Elementary School</option>
+                        <option value="Cherry Run Elementary School">Cherry Run Elementary School</option>
+                        <option value="Clifton Elementary School">Clifton Elementary School</option>
+                        <option value="Colvin Run Elementary School">Colvin Run Elementary School</option>
+                        <option value="Coates Elementary School">Coates Elementary School</option>
+                        <option value="Countryside Elementary School">Countryside Elementary School</option>
+                        <option value="Crossfield Elementary School">Crossfield Elementary School</option>
+                        <option value="Daniels Run Elementary School">Daniels Run Elementary School</option>
+                        <option value="Davis Elementary School">Davis Elementary School</option>
+                        <option value="Dranesville Elementary School">Dranesville Elementary School</option>
+                        <option value="Dunn Loring Elementary School">Dunn Loring Elementary School</option>
+                        <option value="Eagle View Elementary School">Eagle View Elementary School</option>
+                        <option value="Fairfax Villa Elementary School">Fairfax Villa Elementary School</option>
+                        <option value="Fairhill Elementary School">Fairhill Elementary School</option>
+                        <option value="Fairview Elementary School">Fairview Elementary School</option>
+                        <option value="Falls Church Elementary School">Falls Church Elementary School</option>
+                        <option value="Flint Hill Elementary School">Flint Hill Elementary School</option>
+                        <option value="Forest Edge Elementary School">Forest Edge Elementary School</option>
+                        <option value="Fox Mill Elementary School">Fox Mill Elementary School</option>
+                        <option value="Franklin Sherman Elementary School">Franklin Sherman Elementary School</option>
+                        <option value="Franconia Elementary School">Franconia Elementary School</option>
+                        <option value="Freedom Hill Elementary School">Freedom Hill Elementary School</option>
+                        <option value="Graham Road Elementary School">Graham Road Elementary School</option>
+                        <option value="Great Falls Elementary School">Great Falls Elementary School</option>
+                        <option value="Greenbriar West Elementary School">Greenbriar West Elementary School</option>
+                        <option value="Greenbriar East Elementary School">Greenbriar East Elementary School</option>
+                        <option value="Haycock Elementary School">Haycock Elementary School</option>
+                        <option value="Herndon Elementary School">Herndon Elementary School</option>
+                        <option value="Highland Elementary School">Highland Elementary School</option>
+                        <option value="Hollin Meadows Elementary School">Hollin Meadows Elementary School</option>
+                        <option value="Hunt Valley Elementary School">Hunt Valley Elementary School</option>
+                        <option value="Hutchison Elementary School">Hutchison Elementary School</option>
+                        <option value="Island Creek Elementary School">Island Creek Elementary School</option>
+                        <option value="Keene Mill Elementary School">Keene Mill Elementary School</option>
+                        <option value="Kings Glen Elementary School">Kings Glen Elementary School</option>
+                        <option value="Kings Park Elementary School">Kings Park Elementary School</option>
+                        <option value="Lake Anne Elementary School">Lake Anne Elementary School</option>
+                        <option value="Laurel Hill Elementary School">Laurel Hill Elementary School</option>
+                        <option value="Laurel Ridge Elementary School">Laurel Ridge Elementary School</option>
+                        <option value="Lees Corner Elementary School">Lees Corner Elementary School</option>
+                        <option value="Liberty Elementary School">Liberty Elementary School</option>
+                        <option value="Little Run Elementary School">Little Run Elementary School</option>
+                        <option value="Longfellow Middle School Elementary Program">Longfellow Elementary Program</option>
+                        <option value="Lorton Station Elementary School">Lorton Station Elementary School</option>
+                        <option value="Louise Archer Elementary School">Louise Archer Elementary School</option>
+                        <option value="Lynbrook Elementary School">Lynbrook Elementary School</option>
+                        <option value="Mason Crest Elementary School">Mason Crest Elementary School</option>
+                        <option value="McNair Elementary School">McNair Elementary School</option>
+                        <option value="Mosby Woods Elementary School">Mosby Woods Elementary School</option>
+                        <option value="Mount Daniel Elementary School">Mount Daniel Elementary School</option>
+                        <option value="Mount Vernon Woods Elementary School">Mount Vernon Woods Elementary School</option>
+                        <option value="Navy Elementary School">Navy Elementary School</option>
+                        <option value="Newington Forest Elementary School">Newington Forest Elementary School</option>
+                        <option value="North Springfield Elementary School">North Springfield Elementary School</option>
+                        <option value="Nottoway Elementary School">Nottoway Elementary School</option>
+                        <option value="Oakton Elementary School">Oakton Elementary School</option>
+                        <option value="Oak Hill Elementary School">Oak Hill Elementary School</option>
+                        <option value="Oak View Elementary School">Oak View Elementary School</option>
+                        <option value="Olde Creek Elementary School">Olde Creek Elementary School</option>
+                        <option value="Orange Hunt Elementary School">Orange Hunt Elementary School</option>
+                        <option value="Parkwood Elementary School">Parkwood Elementary School</option>
+                        <option value="Pine Spring Elementary School">Pine Spring Elementary School</option>
+                        <option value="Pleasant Valley Elementary School">Pleasant Valley Elementary School</option>
+                        <option value="Poe Middle School Elementary Program">Poe Elementary Program</option>
+                        <option value="Powell Elementary School">Powell Elementary School</option>
+                        <option value="Ravensworth Elementary School">Ravensworth Elementary School</option>
+                        <option value="Riverside Elementary School">Riverside Elementary School</option>
+                        <option value="Rolling Valley Elementary School">Rolling Valley Elementary School</option>
+                        <option value="Rose Hill Elementary School">Rose Hill Elementary School</option>
+                        <option value="Sangster Elementary School">Sangster Elementary School</option>
+                        <option value="Sideburn Run Elementary School">Sideburn Run Elementary School</option>
+                        <option value="Sleepy Hollow Elementary School">Sleepy Hollow Elementary School</option>
+                        <option value="South County Elementary School">South County Elementary School</option>
+                        <option value="Springfield Estates Elementary School">Springfield Estates Elementary School</option>
+                        <option value="Stone Bridge Elementary School">Stone Bridge Elementary School</option>
+                        <option value="Sunrise Valley Elementary School">Sunrise Valley Elementary School</option>
+                        <option value="Terra Centre Elementary School">Terra Centre Elementary School</option>
+                        <option value="Timber Lane Elementary School">Timber Lane Elementary School</option>
+                        <option value="Union Mill Elementary School">Union Mill Elementary School</option>
+                        <option value="Villa Elementary School">Villa Elementary School</option>
+                        <option value="Virginia Run Elementary School">Virginia Run Elementary School</option>
+                        <option value="Waples Mill Elementary School">Waples Mill Elementary School</option>
+                        <option value="West Springfield Elementary School">West Springfield Elementary School</option>
+                        <option value="Westfield Elementary School">Westfield Elementary School</option>
+                        <option value="White Oaks Elementary School">White Oaks Elementary School</option>
+                        <option value="Willow Springs Elementary School">Willow Springs Elementary School</option>
+                        <option value="Windsor Elementary School">Windsor Elementary School</option>
+                        <option value="Wolf Trap Elementary School">Wolf Trap Elementary School</option>
+                        <option value="Woodley Hills Elementary School">Woodley Hills Elementary School</option>
+                        <option value="Woodburn Elementary School">Woodburn Elementary School</option>
+                    </optgroup>
+                    <optgroup label="Middle Schools">
+                        <option value="Bowman Middle School">Bowman Middle School</option>
+                        <option value="Carson Middle School">Carson Middle School</option>
+                        <option value="Chain Bridge Forest Middle School">Chain Bridge Forest Middle School</option>
+                        <option value="Chantilly Academy">Chantilly Academy</option>
+                        <option value="Cooper Middle School">Cooper Middle School</option>
+                        <option value="Daniels Run Elementary School for the Arts and Sciences">Daniels Run ESAS Middle Program</option>
+                        <option value="Falls Church High School Middle School Program">Falls Church MS Program</option>
+                        <option value="Frost Middle School">Frost Middle School</option>
+                        <option value="Franklin Middle School">Franklin Middle School</option>
+                        <option value="Glasgow Middle School">Glasgow Middle School</option>
+                        <option value="Hayfield Middle School">Hayfield Middle School</option>
+                        <option value="Holmes Middle School">Holmes Middle School</option>
+                        <option value="Hughes Middle School">Hughes Middle School</option>
+                        <option value="Irving Middle School">Irving Middle School</option>
+                        <option value="Jackson Middle School">Jackson Middle School</option>
+                        <option value="Johnson Middle School">Johnson Middle School</option>
+                        <option value="Key Middle School">Key Middle School</option>
+                        <option value="Kilmer Middle School">Kilmer Middle School</option>
+                        <option value="Lake Braddock Secondary School Middle Program">Lake Braddock MS Program</option>
+                        <option value="Lanier Middle School">Lanier Middle School</option>
+                        <option value="Longfellow Middle School">Longfellow Middle School</option>
+                        <option value="Luther Jackson Middle School">Luther Jackson Middle School</option>
+                        <option value="Marshall Road Elementary School Middle Program">Marshall Road MS Program</option>
+                        <option value="Poe Middle School">Poe Middle School</option>
+                        <option value="Robinson Secondary School Middle Program">Robinson MS Program</option>
+                        <option value="Rocky Run Middle School">Rocky Run Middle School</option>
+                        <option value="Sandburg Middle School">Sandburg Middle School</option>
+                        <option value="Stone Middle School">Stone Middle School</option>
+                        <option value="Thoreau Middle School">Thoreau Middle School</option>
+                        <option value="Twain Middle School">Twain Middle School</option>
+                        <option value="Whitman Middle School">Whitman Middle School</option>
+                    </optgroup>
+                </select>
+                <button class="search-btn" onclick="selectSchool()">View School</button>
+            </div>
+            <div class="filter-container">
+                <button class="filter-btn active" onclick="filterSchools('all')">All Schools</button>
+                <button class="filter-btn" onclick="filterSchools('elementary')">Elementary</button>
+                <button class="filter-btn" onclick="filterSchools('middle')">Middle School</button>
+            </div>
+        </div>
+
+        <div id="loadingDiv" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Loading school safety data...</p>
+        </div>
+
+        <div id="errorDiv" class="error-message" style="display: none;">
+            <p>Unable to load school data. Please check your internet connection and try again.</p>
+        </div>
+
+        <div id="schoolsContainer">
+            <!-- Schools will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        // Sample data - In production, this would come from Fairfax County APIs
+        const sampleSchools = [
+            {
+                name: "Annandale Elementary School",
+                type: "Elementary",
+                address: "4700 Annandale Rd, Annandale, VA 22003",
+                score: 87,
+                crimeRate: 2.1,
+                trafficIncidents: 5,
+                sexOffenders: 1,
+                nearbyViolentCrime: 0.8
+            },
+            {
+                name: "Bailey's Elementary School",
+                type: "Elementary",
+                address: "6245 Leesburg Pike, Falls Church, VA 22044",
+                score: 83,
+                crimeRate: 2.8,
+                trafficIncidents: 7,
+                sexOffenders: 1,
+                nearbyViolentCrime: 1.1
+            },
+            {
+                name: "Braddock Elementary School",
+                type: "Elementary", 
+                address: "9200 Burke Lake Rd, Burke, VA 22015",
+                score: 92,
+                crimeRate: 1.4,
+                trafficIncidents: 3,
+                sexOffenders: 0,
+                nearbyViolentCrime: 0.3
+            },
+            {
+                name: "Camelot Elementary School",
+                type: "Elementary",
+                address: "4705 Annandale Rd, Annandale, VA 22003",
+                score: 84,
+                crimeRate: 2.6,
+                trafficIncidents: 6,
+                sexOffenders: 1,
+                nearbyViolentCrime: 1.0
+            },
+            {
+                name: "Centreville Elementary School",
+                type: "Elementary",
+                address: "13619 St Germain Dr, Centreville, VA 20120",
+                score: 89,
+                crimeRate: 1.8,
+                trafficIncidents: 4,
+                sexOffenders: 0,
+                nearbyViolentCrime: 0.6
+            },
+            {
+                name: "Chantilly Elementary School",
+                type: "Elementary",
+                address: "4488 Brookfield Corporate Dr, Chantilly, VA 20151",
+                score: 86,
+                crimeRate: 2.2,
+                trafficIncidents: 6,
+                sexOffenders: 1,
+                nearbyViolentCrime: 0.9
+            },
+            {
+                name: "Carson Middle School",
+                type: "Middle School",
+                address: "13618 McLearen Rd, Herndon, VA 20171",
+                score: 78,
+                crimeRate: 3.2,
+                trafficIncidents: 8,
+                sexOffenders: 2,
+                nearbyViolentCrime: 1.2
+            },
+            {
+                name: "Colvin Run Elementary School",
+                type: "Elementary",
+                address: "10201 Colvin Run Rd, Great Falls, VA 22066",
+                score: 95,
+                crimeRate: 0.9,
+                trafficIncidents: 2,
+                sexOffenders: 0,
+                nearbyViolentCrime: 0.1
+            },
+            {
+                name: "Daniels Run Elementary School",
+                type: "Elementary",
+                address: "3705 Old Lee Hwy, Fairfax, VA 22030",
+                score: 85,
+                crimeRate: 2.3,
+                trafficIncidents: 6,
+                sexOffenders: 1,
+                nearbyViolentCrime: 0.9
+            },
+            {
+                name: "Eagle View Elementary School",
+                type: "Elementary",
+                address: "13000 Dairymaid Dr, Herndon, VA 20171",
+                score: 94,
+                crimeRate: 1.1,
+                trafficIncidents: 2,
+                sexOffenders: 0,
+                nearbyViolentCrime: 0.2
+            },
+            {
+                name: "Franklin Middle School",
+                type: "Middle School",
+                address: "3020 Lees Corner Rd, Chantilly, VA 20151",
+                score: 81,
+                crimeRate: 2.8,
+                trafficIncidents: 7,
+                sexOffenders: 1,
+                nearbyViolentCrime: 1.0
+            },
+            {
+                name: "Frost Middle School",
+                type: "Middle School",
+                address: "4101 Pickett Rd, Fairfax, VA 22032",
+                score: 84,
+                crimeRate: 2.5,
+                trafficIncidents: 6,
+                sexOffenders: 1,
+                nearbyViolentCrime: 0.8
+            },
+            {
+                name: "Great Falls Elementary School",
+                type: "Elementary",
+                address: "701 Walker Rd, Great Falls, VA 22066",
+                score: 96,
+                crimeRate: 0.7,
+                trafficIncidents: 1,
+                sexOffenders: 0,
+                nearbyViolentCrime: 0.1
+            },
+            {
+                name: "Herndon Elementary School",
+                type: "Elementary",
+                address: "660 Dranesville Rd, Herndon, VA 20170",
+                score: 82,
+                crimeRate: 2.9,
+                trafficIncidents: 8,
+                sexOffenders: 2,
+                nearbyViolentCrime: 1.3
+            },
+            {
+                name: "Hughes Middle School",
+                type: "Middle School",
+                address: "11301 Gainsborough Rd, Reston, VA 20191",
+                score: 88,
+                crimeRate: 1.9,
+                trafficIncidents: 4,
+                sexOffenders: 0,
+                nearbyViolentCrime: 0.5
+            },
+            {
+                name: "Irving Middle School",
+                type: "Middle School",
+                address: "8100 Old Keene Mill Rd, Springfield, VA 22152",
+                score: 79,
+                crimeRate: 3.1,
+                trafficIncidents: 9,
+                sexOffenders: 2,
+                nearbyViolentCrime: 1.4
+            },
+            {
+                name: "Kings Park Elementary School",
+                type: "Elementary",
+                address: "8401 Marquis Ln, Springfield, VA 22152",
+                score: 80,
+                crimeRate: 3.0,
+                trafficIncidents: 8,
+                sexOffenders: 2,
+                nearbyViolentCrime: 1.2
+            },
+            {
+                name: "Lake Anne Elementary School",
+                type: "Elementary",
+                address: "11510 North Shore Dr, Reston, VA 20190",
+                score: 91,
+                crimeRate: 1.5,
+                trafficIncidents: 3,
+                sexOffenders: 0,
+                nearbyViolentCrime: 0.4
+            },
+            {
+                name: "Longfellow Middle School",
+                type: "Middle School",
+                address: "2000 Westmoreland St, Falls Church, VA 22043",
+                score: 86,
+                crimeRate: 2.4,
+                trafficIncidents: 5,
+                sexOffenders: 1,
+                nearbyViolentCrime: 0.7
+            },
+            {
+                name: "McNair Elementary School",
+                type: "Elementary",
+                address: "6200 Rolling Rd, Springfield, VA 22152",
+                score: 77,
+                crimeRate: 3.4,
+                trafficIncidents: 10,
+                sexOffenders: 3,
+                nearbyViolentCrime: 1.6
+            },
+            {
+                name: "Oakton Elementary School",
+                type: "Elementary",
+                address: "3000 Chain Bridge Rd, Oakton, VA 22124",
+                score: 93,
+                crimeRate: 1.2,
+                trafficIncidents: 2,
+                sexOffenders: 0,
+                nearbyViolentCrime: 0.3
+            },
+            {
+                name: "Poe Middle School",
+                type: "Middle School",
+                address: "7000 Cindy Ln, Annandale, VA 22003",
+                score: 75,
+                crimeRate: 3.6,
+                trafficIncidents: 11,
+                sexOffenders: 3,
+                nearbyViolentCrime: 1.8
+            },
+            {
+                name: "Rocky Run Middle School",
+                type: "Middle School",
+                address: "4400 Stringfellow Rd, Chantilly, VA 20151",
+                score: 87,
+                crimeRate: 2.0,
+                trafficIncidents: 4,
+                sexOffenders: 0,
+                nearbyViolentCrime: 0.6
+            },
+            {
+                name: "Sangster Elementary School",
+                type: "Elementary",
+                address: "7620 Dolce Ln, Springfield, VA 22152",
+                score: 74,
+                crimeRate: 3.8,
+                trafficIncidents: 12,
+                sexOffenders: 4,
+                nearbyViolentCrime: 2.0
+            },
+            {
+                name: "Stone Middle School",
+                type: "Middle School",
+                address: "5500 Sully Park Dr, Centreville, VA 20120",
+                score: 90,
+                crimeRate: 1.6,
+                trafficIncidents: 3,
+                sexOffenders: 0,
+                nearbyViolentCrime: 0.4
+            },
+            {
+                name: "Thoreau Middle School",
+                type: "Middle School",
+                address: "2505 Cedar Ln, Vienna, VA 22180",
+                score: 89,
+                crimeRate: 1.7,
+                trafficIncidents: 3,
+                sexOffenders: 0,
+                nearbyViolentCrime: 0.5
+            },
+            {
+                name: "Wolf Trap Elementary School",
+                type: "Elementary",
+                address: "1205 Beulah Rd, Vienna, VA 22182",
+                score: 88,
+                crimeRate: 1.9,
+                trafficIncidents: 4,
+                sexOffenders: 0,
+                nearbyViolentCrime: 0.6
+            }
         ];
 
-        function App() {
-            const [selectedSchoolId, setSelectedSchoolId] = React.useState('');
-            const [showDetails, setShowDetails] = React.useState({
-                crime: false,
-                traffic: false,
-                sexOffender: false,
-            });
+        let currentFilter = 'all';
+        let currentSearch = '';
 
-            const selectedSchool = schoolsData.find((school) => school.id === selectedSchoolId);
-
-            const getOverallScoreColor = (score) => {
-                if (score >= 80) return 'bg-green-500';
-                if (score >= 60) return 'bg-yellow-500';
-                return 'bg-red-500';
-            };
-
-            const getCategoryScoreColor = (score) => {
-                if (score >= 85) return 'text-green-600';
-                if (score >= 70) return 'text-yellow-600';
-                return 'text-red-600';
-            };
-
-            const toggleDetails = (category) => {
-                setShowDetails((prev) => ({
-                    ...prev,
-                    [category]: !prev[category],
-                }));
-            };
-
-            return (
-                <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 p-4 sm:p-6 lg:p-8 font-inter">
-                    <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">
-                        {/* Header Section */}
-                        <header className="bg-blue-600 text-white p-6 sm:p-8 text-center rounded-t-xl">
-                            <h1 className="text-3xl sm:text-4xl font-bold mb-2">Fairfax Kidsafe Commute</h1>
-                            <p className="text-lg sm:text-xl">Empowering Parents with Data for Safer School Commutes</p>
-                        </header>
-
-                        {/* School Selection Section */}
-                        <section className="p-6 sm:p-8">
-                            <h2 className="text-2xl sm:text-3xl font-semibold text-gray-800 mb-6 text-center">
-                                Find Your Child's School
-                            </h2>
-                            <div className="flex flex-col items-center gap-4">
-                                <label htmlFor="school-select" className="sr-only">
-                                    Select a school
-                                </label>
-                                <select
-                                    id="school-select"
-                                    className="w-full max-w-md p-3 border border-gray-300 rounded-lg text-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                                    value={selectedSchoolId}
-                                    onChange={(e) => setSelectedSchoolId(e.target.value)}
-                                >
-                                    <option value="">-- Select a School --</option>
-                                    {schoolsData.map((school) => (
-                                        <option key={school.id} value={school.id}>
-                                            {school.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </section>
-
-                        {/* Safety Report Section */}
-                        {selectedSchool && (
-                            <section className="p-6 sm:p-8 border-t border-gray-200">
-                                <h2 className="text-2xl sm:text-3xl font-semibold text-gray-800 mb-6 text-center">
-                                    Safety Report for {selectedSchool.name}
-                                </h2>
-
-                                {/* Overall Score */}
-                                <div className={`p-6 rounded-xl text-white shadow-lg mb-8 ${getOverallScoreColor(selectedSchool.safety.overallScore)}`}>
-                                    <h3 className="text-xl sm:text-2xl font-bold mb-2 text-center">Overall Walkability Safety Score</h3>
-                                    <p className="text-5xl sm:text-6xl font-extrabold text-center">
-                                        {selectedSchool.safety.overallScore}
-                                        <span className="text-3xl">/100</span>
-                                    </p>
-                                    <p className="text-center mt-2 text-lg">
-                                        This score reflects a comprehensive assessment of safety factors around the school.
-                                    </p>
-                                </div>
-
-                                {/* Category Breakdowns */}
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    {/* Crime Rates */}
-                                    <div className="bg-gray-50 p-6 rounded-xl shadow-md flex flex-col items-center text-center">
-                                        <span className="text-blue-600 text-5xl mb-3">🛡️</span> {/* Icon replacement */}
-                                        <h4 className="text-xl font-semibold text-gray-800 mb-2">Crime Rates</h4>
-                                        <p className={`text-3xl font-bold mb-4 ${getCategoryScoreColor(selectedSchool.safety.crime.score)}`}>
-                                            {selectedSchool.safety.crime.score}
-                                            <span className="text-xl">/100</span>
-                                        </p>
-                                        <p className="text-gray-700 text-base mb-4">{selectedSchool.safety.crime.description}</p>
-                                        <button
-                                            onClick={() => toggleDetails('crime')}
-                                            className="mt-auto bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full shadow-md transition-all duration-300 ease-in-out flex items-center justify-center gap-2"
-                                        >
-                                            {showDetails.crime ? 'Hide Details' : 'Show Details'}
-                                            {showDetails.crime ? <span className="ml-1">↓</span> : <span className="ml-1">→</span>} {/* Arrow replacement */}
-                                        </button>
-                                        {showDetails.crime && (
-                                            <ul className="mt-4 text-left text-gray-600 text-sm w-full list-disc list-inside">
-                                                {selectedSchool.safety.crime.details.map((detail, index) => (
-                                                    <li key={index}>{detail}</li>
-                                                ))}
-                                            </ul>
-                                        )}
-                                    </div>
-
-                                    {/* Traffic & Walkability */}
-                                    <div className="bg-gray-50 p-6 rounded-xl shadow-md flex flex-col items-center text-center">
-                                        <span className="text-blue-600 text-5xl mb-3">🚗</span> {/* Icon replacement */}
-                                        <h4 className="text-xl font-semibold text-gray-800 mb-2">Traffic & Walkability</h4>
-                                        <p className={`text-3xl font-bold mb-4 ${getCategoryScoreColor(selectedSchool.safety.traffic.score)}`}>
-                                            {selectedSchool.safety.traffic.score}
-                                            <span className="text-xl">/100</span>
-                                        </p>
-                                        <p className="text-gray-700 text-base mb-4">{selectedSchool.safety.traffic.description}</p>
-                                        <button
-                                            onClick={() => toggleDetails('traffic')}
-                                            className="mt-auto bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full shadow-md transition-all duration-300 ease-in-out flex items-center justify-center gap-2"
-                                        >
-                                            {showDetails.traffic ? 'Hide Details' : 'Show Details'}
-                                            {showDetails.traffic ? <span className="ml-1">↓</span> : <span className="ml-1">→</span>} {/* Arrow replacement */}
-                                        </button>
-                                        {showDetails.traffic && (
-                                            <ul className="mt-4 text-left text-gray-600 text-sm w-full list-disc list-inside">
-                                                {selectedSchool.safety.traffic.details.map((detail, index) => (
-                                                    <li key={index}>{detail}</li>
-                                                ))}
-                                            </ul>
-                                        )}
-                                    </div>
-
-                                    {/* Sex Offender Data */}
-                                    <div className="bg-gray-50 p-6 rounded-xl shadow-md flex flex-col items-center text-center">
-                                        <span className="text-blue-600 text-5xl mb-3">👥</span> {/* Icon replacement */}
-                                        <h4 className="text-xl font-semibold text-gray-800 mb-2">Registered Sex Offenders</h4>
-                                        <p className={`text-3xl font-bold mb-4 ${getCategoryScoreColor(selectedSchool.safety.sexOffender.score)}`}>
-                                            {selectedSchool.safety.sexOffender.score}
-                                            <span className="text-xl">/100</span>
-                                        </p>
-                                        <p className="text-gray-700 text-base mb-4">{selectedSchool.safety.sexOffender.description}</p>
-                                        <button
-                                            onClick={() => toggleDetails('sexOffender')}
-                                            className="mt-auto bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full shadow-md transition-all duration-300 ease-in-out flex items-center justify-center gap-2"
-                                        >
-                                            {showDetails.sexOffender ? 'Hide Details' : 'Show Details'}
-                                            {showDetails.sexOffender ? <span className="ml-1">↓</span> : <span className="ml-1">→</span>} {/* Arrow replacement */}
-                                        </button>
-                                        {showDetails.sexOffender && (
-                                            <div className="mt-4 text-left text-gray-600 text-sm w-full">
-                                                <ul className="list-disc list-inside">
-                                                    {selectedSchool.safety.sexOffender.details.map((detail, index) => (
-                                                        <li key={index}>{detail}</li>
-                                                    ))}
-                                                </ul>
-                                                <p className="mt-2 text-blue-700 font-semibold">
-                                                    <span className="inline-block mr-1">ℹ️</span> {/* Info icon replacement */}
-                                                    For official and complete information, please visit the:
-                                                    <a
-                                                        href="https://www.vspsor.com/"
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-blue-500 hover:underline ml-1"
-                                                    >
-                                                        Virginia State Police Sex Offender Registry
-                                                    </a>
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Disclaimer and Methodology */}
-                                <div className="mt-8 p-6 bg-yellow-50 rounded-xl shadow-inner text-gray-700 text-sm border-l-4 border-yellow-400">
-                                    <h3 className="text-lg font-semibold mb-2">Important Disclaimers:</h3>
-                                    <ul className="list-disc list-inside space-y-1">
-                                        <li>
-                                            <span className="font-bold">Data Source:</span> The data presented on this website is for illustrative purposes only and is based on simulated data that would typically be aggregated from official public sources such as Fairfax County Police Department, VDOT, and the Virginia State Police Sex Offender Registry.
-                                        </li>
-                                        <li>
-                                            <span className="font-bold">Last Data Update:</span> This simulated dataset was last updated on <span className="font-bold text-blue-700">{lastPulledDate}</span>. In a real application, this date would reflect when the data was truly pulled from public APIs.
-                                        </li>
-                                        <li>
-                                            <span className="font-bold">Accuracy & Timeliness:</span> Public data can be subject to reporting delays and updates. While we aim for accuracy, this tool should be used as a supplementary guide and not a definitive safety assessment.
-                                        </li>
-                                        <li>
-                                            <span className="font-bold">Personal Responsibility:</span> Always exercise personal vigilance and consider a variety of factors when assessing safety for your child's commute.
-                                        </li>
-                                        <li>
-                                            <span className="font-bold">Sex Offender Data:</span> We provide counts for general awareness. For official and comprehensive information, always refer to the Virginia State Police Sex Offender Registry (vspsor.com). Do not use information from this site to commit a crime or harass any individual.
-                                        </li>
-                                    </ul>
-                                    <h3 className="text-lg font-semibold mt-4 mb-2">Our Methodology (Simulated):</h3>
-                                    <p>
-                                        The "Walkability Safety Score" is calculated by combining simulated data points for crime rates, traffic and pedestrian infrastructure, and the proximity of registered sex offenders. Each category contributes to the overall score, providing a holistic view of the walkability safety. Specific weighting and algorithms are simplified for this demonstration.
-                                    </p>
-                                </div>
-                            </section>
-                        )}
-
-                        {/* Footer Section */}
-                        <footer className="bg-gray-800 text-white p-6 sm:p-8 text-center rounded-b-xl mt-8">
-                            <p className="text-sm">Fairfax Kidsafe Commute &copy; 2025. All rights reserved.</p>
-                            <p className="text-sm mt-1">Data for demonstration purposes only.</p>
-                        </footer>
-                    </div>
-                </div>
-            );
+        function getScoreClass(score) {
+            if (score >= 90) return 'score-excellent';
+            if (score >= 80) return 'score-good';
+            if (score >= 70) return 'score-fair';
+            return 'score-poor';
         }
 
-        // Render the React App
-        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+        function getScoreLabel(score) {
+            if (score >= 90) return 'Excellent';
+            if (score >= 80) return 'Good';
+            if (score >= 70) return 'Fair';
+            return 'Needs Attention';
+        }
+
+        function getMetricClass(value, type) {
+            if (type === 'crime' || type === 'traffic' || type === 'offenders') {
+                if (value <= 2) return 'metric-low';
+                if (value <= 5) return 'metric-medium';
+                return 'metric-high';
+            }
+            return 'metric-low';
+        }
+
+        function renderSchool(school) {
+            return `
+                <div class="school-card">
+                    <div class="school-header">
+                        <div>
+                            <div class="school-name">${school.name}</div>
+                            <div class="school-type">${school.type}</div>
+                            <div class="school-address">${school.address}</div>
+                        </div>
+                        <div class="safety-score">
+                            <div class="score-circle ${getScoreClass(school.score)}">${school.score}</div>
+                            <div class="score-label">${getScoreLabel(school.score)}</div>
+                        </div>
+                    </div>
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <div class="metric-value ${getMetricClass(school.crimeRate, 'crime')}">${school.crimeRate}</div>
+                            <div class="metric-label">Crime Rate<br>(per 1000)</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value ${getMetricClass(school.trafficIncidents, 'traffic')}">${school.trafficIncidents}</div>
+                            <div class="metric-label">Traffic<br>Incidents</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value ${getMetricClass(school.sexOffenders, 'offenders')}">${school.sexOffenders}</div>
+                            <div class="metric-label">Sex Offenders<br>(0.5mi radius)</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value ${getMetricClass(school.nearbyViolentCrime, 'crime')}">${school.nearbyViolentCrime}</div>
+                            <div class="metric-label">Violent Crime<br>(per 1000)</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function filterSchools(type) {
+            currentFilter = type;
+            
+            // Update active filter button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            renderSchools();
+        }
+
+        function selectSchool() {
+            const selectedSchool = document.getElementById('schoolSelect').value;
+            if (selectedSchool) {
+                currentSearch = selectedSchool.toLowerCase();
+                renderSchools();
+                // Scroll to results
+                document.getElementById('schoolsContainer').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function searchSchools() {
+            // This function is kept for compatibility but now uses the dropdown
+            selectSchool();
+        }
+
+        function renderSchools() {
+            const container = document.getElementById('schoolsContainer');
+            let filteredSchools = sampleSchools;
+
+            // Apply filter
+            if (currentFilter !== 'all') {
+                filteredSchools = filteredSchools.filter(school => 
+                    school.type.toLowerCase().includes(currentFilter)
+                );
+            }
+
+            // Apply search
+            if (currentSearch) {
+                filteredSchools = filteredSchools.filter(school =>
+                    school.name.toLowerCase().includes(currentSearch) ||
+                    school.address.toLowerCase().includes(currentSearch)
+                );
+            }
+
+            // Sort by safety score (highest first)
+            filteredSchools.sort((a, b) => b.score - a.score);
+
+            if (filteredSchools.length === 0) {
+                container.innerHTML = `
+                    <div class="error-message">
+                        <p>No schools found matching your criteria. Try adjusting your search or filter.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredSchools.map(renderSchool).join('');
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simulate loading data
+            document.getElementById('loadingDiv').style.display = 'block';
+            
+            setTimeout(() => {
+                document.getElementById('loadingDiv').style.display = 'none';
+                renderSchools();
+            }, 1500);
+
+            // Add change event for dropdown
+            document.getElementById('schoolSelect').addEventListener('change', function() {
+                if (this.value) {
+                    selectSchool();
+                }
+            });
+        });
+
+        // Note: In a production environment, you would replace the sample data with actual API calls:
+        // 
+        // async function fetchSchoolData() {
+        //     try {
+        //         // Fairfax County Schools API
+        //         const schoolsResponse = await fetch('https://gis.fairfaxcounty.gov/arcgis/rest/services/OpenData/Schools/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json');
+        //         const schoolsData = await schoolsResponse.json();
+        //         
+        //         // Fairfax County Crime Data API
+        //         const crimeResponse = await fetch('https://www.fcpod.org/api/search/');
+        //         const crimeData = await crimeResponse.json();
+        //         
+        //         // Virginia Sex Offender Registry API (if available)
+        //         // const sexOffenderResponse = await fetch('...');
+        //         
+        //         // Process and combine the data
+        //         return processSchoolSafetyData(schoolsData, crimeData);
+        //     } catch (error) {
+        //         console.error('Error fetching data:', error);
+        //         document.getElementById('errorDiv').style.display = 'block';
+        //     }
+        // }
     </script>
 </body>
 </html>
